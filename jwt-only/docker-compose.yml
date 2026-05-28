@@ -1,0 +1,50 @@
+name: jwt-only
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: auth_core
+    ports:
+      - "5432:5432"
+    volumes:
+      - jwt-only-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d auth_core"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  auth-server:
+    build: ./auth-server
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/.well-known/oauth-authorization-server >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  echo-preauthorized:
+    build: ./echo-preauthorized
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      auth-server:
+        condition: service_healthy
+
+volumes:
+  jwt-only-postgres-data:

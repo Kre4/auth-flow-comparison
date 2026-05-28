@@ -1,0 +1,27 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: gateway
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8080/oauth2/jwks
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            - id: echo-route
+              uri: ${ECHO_SERVICE_URL:http://localhost:8081}
+              predicates:
+                - Path=/echo/**
+              filters:
+                - StripPrefix=1
+                - RemoveRequestHeader=Cookie
+
+permissions:
+  service:
+    base-url: http://localhost:8082

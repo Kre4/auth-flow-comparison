@@ -1,0 +1,22 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://auth-server:8080/oauth2/jwks
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            - id: echo-route
+              uri: http://echo-preauthorized:8081
+              predicates:
+                - Path=/echo/**
+              filters:
+                - StripPrefix=1
+                - RemoveRequestHeader=Cookie
+
+permissions:
+  service:
+    base-url: http://permissions:8082

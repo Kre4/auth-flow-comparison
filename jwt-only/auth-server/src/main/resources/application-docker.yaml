@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/auth_core
+    username: postgres
+    password: postgres
+  sql:
+    init:
+      mode: always
+      continue-on-error: true
