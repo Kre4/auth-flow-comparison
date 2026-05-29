@@ -1,0 +1,85 @@
+name: permissions-cached
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: auth_core2
+    ports:
+      - "5432:5432"
+    volumes:
+      - permissions-cached-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d auth_core2" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  auth-server:
+    build: ./auth-server
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  permissions:
+    build: ./permissions
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth-server:
+        condition: service_started
+
+  echo-preauthorized:
+    build: ./echo-preauthorized
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      auth-server:
+        condition: service_started
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gateway:
+    build: ./gateway
+    restart: unless-stopped
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      auth-server:
+        condition: service_started
+      permissions:
+        condition: service_started
+      echo-preauthorized:
+        condition: service_started
+      redis:
+        condition: service_healthy
+
+volumes:
+  permissions-cached-postgres-data:

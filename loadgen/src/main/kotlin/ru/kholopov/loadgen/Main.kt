@@ -5,7 +5,7 @@ import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import kotlin.system.exitProcess
 
-private const val REQUESTS = 1000
+private const val SECONDS = 180
 private const val CONCURRENCY = 50
 
 fun main(args: Array<String>) {
@@ -15,10 +15,6 @@ fun main(args: Array<String>) {
 	}
 
 	val scenario = Scenario.parse(args[0])
-	if (scenario == Scenario.CACHE) {
-		println("Сценарий cache пока не реализован.")
-		exitProcess(0)
-	}
 
 	val token = args[1]
 	val hey = resolveHeyExe()
@@ -58,13 +54,13 @@ private fun buildHeyCommand(hey: Path, url: String, token: String): HeyCommand {
 	val header = "Authorization: Bearer $token"
 	val argv = listOf(
 		heyPath,
-		"-n", REQUESTS.toString(),
+		"-z", "${SECONDS}s",
 		"-c", CONCURRENCY.toString(),
 		"-m", "GET",
 		"-H", header,
 		url,
 	)
-	val argsTail = "-n $REQUESTS -c $CONCURRENCY -m GET -H ${quote(header)} ${quote(url)}"
+	val argsTail = "-z $SECONDS -c $CONCURRENCY -m GET -H ${quote(header)} ${quote(url)}"
 	return HeyCommand(
 		argv = argv,
 		powershell = "& ${quote(heyPath)} $argsTail",

@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: permissions
+  datasource:
+    url: jdbc:postgresql://localhost:5432/auth_core2
+    username: postgres
+    password: postgres
+
+server:
+  port: 8082

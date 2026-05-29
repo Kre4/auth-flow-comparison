@@ -1,0 +1,13 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8080/oauth2/jwks
+
+permissions:
+  service:
+    base-url: http://localhost:8082
+  cache:
+    redis:
+      enabled: false

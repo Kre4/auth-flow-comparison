@@ -1,9 +1,9 @@
 package ru.kholopov.loadgen
 
 enum class Scenario(val url: String) {
-	JWT("http://localhost:8081/echo?value=load"),
-	PERMISSION("http://localhost:8083/echo?value=load"),
-	CACHE(""),
+	JWT("http://localhost:8081/echo?value=load1"),
+	PERMISSION("http://localhost:8083/echo/echo?value=load2"),
+	CACHE("http://localhost:8083/echo/echo?value=load3"),
 	;
 
 	companion object {
